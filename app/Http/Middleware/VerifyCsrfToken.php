@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        "http://localhost/api-lerigo/public/eventos"
+        "http://localhost/api-lerigo/public/usuario",
+        "http://localhost/api-lerigo/public/login"
     ];
 }
