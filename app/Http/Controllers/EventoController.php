@@ -37,22 +37,23 @@ class EventoController extends BaseController
      */
     public function salvarEvento(Request $request): bool
     {
+        $request = json_decode($request->getContent(), true);
         $request["id"] = empty($request["id"]) ? 0 : $request["id"];
         $request["data"] = date("Y-m-d", strtotime($request["data"]));
-        $request["espaco"] = empty($request["espaco"]) ? 0 : $request["espaco"];
+        $request["espaco"] = !is_array($request["espaco"]) ? 0 : $request["espaco"]["value"];
         $SQL = <<<SQL
 REPLACE INTO
     evento
 (
     id, nome, classificacao, data, hora_ini, hora_fim, descricao, resumo, facebook,
-    instagram, site, tipo, espaco, imagem_perfil, foto_evento
+    instagram, site, tipo, espaco, imagem_perfil
 )
 VALUES
 (
     {$request["id"]}, '{$request["nome"]}', '{$request["classificacao"]["code"]}', '{$request["data"]}',
     '{$request["hrIni"]}', '{$request["hrFim"]}', '{$request["descricao"]}', '{$request["resumo"]}',
     '{$request["facebook"]}', '{$request["instagram"]}', '{$request["site"]}', '{$request["tipo"]["value"]}',
-    {$request["espaco"]}, '{$request["imagemPerfil"]}', '{$request["fotoEvento"]}'
+    {$request["espaco"]}, '{$request["imagemPerfil"]}'
 )
 SQL;
         try {
@@ -60,9 +61,12 @@ SQL;
             if (is_array($request["artistas"])) {
                 $this->salvarArtistas($request["id"], $request["artistas"]);
             }
+            if (is_array($request["fotosEvento"]) && count($request["fotosEvento"]) > 0) {
+                $this->salvarFotos($request["id"], $request["fotosEvento"]);
+            }
             return true;
         } catch (Exception $e) {
-            throw new Exception("Ocorreu um erro");
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -84,6 +88,30 @@ INSERT INTO
 VALUES
 (
   $idEvento, {$artista["value"]}
+)
+SQL;
+            DB::select($SQL);
+        }
+    }
+
+    /**
+     * @param int $idEvento
+     * @param array $fotos
+     */
+    private function salvarFotos(int $idEvento, array $fotos)
+    {
+        $idEvento = !$idEvento ? $this->buscarIdEvento() : $idEvento;
+        DB::select("DELETE FROM evento_foto WHERE id_evento = $idEvento");
+        foreach ($fotos as $foto) {
+            $SQL = <<<SQL
+INSERT INTO
+    evento_foto
+(
+    id_evento, foto
+)
+VALUES
+(
+  $idEvento, '$foto'
 )
 SQL;
             DB::select($SQL);

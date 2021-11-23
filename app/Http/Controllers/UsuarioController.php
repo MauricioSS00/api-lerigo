@@ -37,6 +37,7 @@ class UsuarioController extends BaseController
      */
     public function salvarUsuario(Request $request): bool
     {
+        $request = json_decode($request->getContent(), true);
         $endereco = $request["endereco"][0];
         $tipoPessoa = $request["tipoP"] == "cpf" ? "F" : "J";
         $dtNasc = date("d/m/Y", strtotime($request["dtNasc"]));
@@ -64,5 +65,49 @@ SQL;
         } catch (Exception $e) {
             throw new Exception("Ocorreu um erro");
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return int|null
+     * @throws Exception
+     */
+    public function salvarUsuarioRapido(Request $request): ?int
+    {
+        $request = json_decode($request->getContent(), true);
+        $senha = bcrypt($request["user_password"]);
+        $request["id"] = empty($request["id"]) ? 0 : $request["id"];
+        $SQL = <<<SQL
+INSERT INTO
+    users
+(
+    nome, nome_social, email, password
+)
+VALUES
+(
+    '{$request["user_nome_civ"]}', '{$request["user_soc_nome"]}', '{$request["user_email"]}', '$senha'
+)
+SQL;
+        try {
+            DB::select($SQL);
+            return $this->buscarIdEvento();
+        } catch (Exception $e) {
+            throw new Exception("Ocorreu um erro");
+        }
+    }
+
+    /**
+     * @return int|null
+     */
+    private function buscarIdEvento(): ?int
+    {
+        $SQL = <<<SQL
+SELECT
+    MAX(id) id
+FROM
+    users;
+SQL;
+        $result = DB::select($SQL);
+        return is_array($result) ? $result[0]->id : null;
     }
 }

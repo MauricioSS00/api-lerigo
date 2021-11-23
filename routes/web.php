@@ -9,6 +9,7 @@ Route::post('/login', [AuthController::class, "login"]);
 Route::get('/usuario/{codUsuario}', [UsuarioController::class, "listarUsuario"]);
 Route::get('/usuarios', [UsuarioController::class, "listarUsuarios"]);
 Route::post('/usuario', [UsuarioController::class, "salvarUsuario"]);
+Route::post('/usuario_rapido', [UsuarioController::class, "salvarUsuarioRapido"]);
 
 Route::get('/evento/{codEvento}', [EventoController::class, "listarEvento"]);
 Route::get('/eventos', [EventoController::class, "listarEventos"]);
