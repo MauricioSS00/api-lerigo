@@ -17,7 +17,13 @@ class EventoController extends BaseController
      */
     public function listarEventos(): array
     {
-        return DB::select("SELECT * FROM evento");
+        $eventos = DB::select("SELECT * FROM evento");
+        if (is_array($eventos)) {
+            foreach ($eventos as &$evento) {
+                $evento->fotosEvento = $this->buscarFotos($evento->id);
+            }
+        }
+        return $eventos;
     }
 
     /**
@@ -27,7 +33,20 @@ class EventoController extends BaseController
     public function listarEvento(int $codEvento)
     {
         $evento = DB::select("SELECT * FROM evento WHERE id = $codEvento");
-        return is_array($evento) ? $evento[0] : [];
+        if (is_array($evento)) {
+            $evento[0]->fotosEvento = $this->buscarFotos($codEvento);
+            return $evento[0];
+        }
+        return [];
+    }
+
+    /**
+     * @param int $codEvento
+     * @return array
+     */
+    private function buscarFotos(int $codEvento): array
+    {
+        return DB::select("SELECT foto FROM evento_foto WHERE id_evento = $codEvento");
     }
 
     /**
