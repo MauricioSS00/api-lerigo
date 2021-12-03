@@ -57,9 +57,23 @@ class EventoController extends BaseController
     public function salvarEvento(Request $request): bool
     {
         $request = json_decode($request->getContent(), true);
+        $request["nome"] = $request["nome"] ?? "";
+        $request["classificacao"] = $request["classificacao"] ?? "";
+        $request["data"] = $request["data"] ?? "";
+        $request["hrIni"] = $request["hrIni"] ?? "";
+        $request["hrFim"] = $request["hrFim"] ?? "";
+        $request["descricao"] = $request["descricao"] ?? "";
+        $request["resumo"] = $request["resumo"] ?? "";
+        $request["facebook"] = $request["facebook"] ?? "";
+        $request["instagram"] = $request["instagram"] ?? "";
+        $request["site"] = $request["site"] ?? "";
+        $request["tipo"] = $request["tipo"] ?? "";
+        $request["espaco"] = $request["espaco"] ?? "";
+        $request["imagemPerfil"] = $request["imagemPerfil"] ?? "";
         $request["id"] = empty($request["id"]) ? 0 : $request["id"];
         $request["data"] = date("Y-m-d", strtotime($request["data"]));
         $request["espaco"] = !is_array($request["espaco"]) ? 0 : $request["espaco"]["value"];
+
         $SQL = <<<SQL
 REPLACE INTO
     evento
