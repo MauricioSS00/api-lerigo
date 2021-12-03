@@ -58,7 +58,7 @@ class EventoController extends BaseController
     {
         $request = json_decode($request->getContent(), true);
         $request["nome"] = $request["nome"] ?? "";
-        $request["classificacao"] = $request["classificacao"] ?? "";
+        $request["classificacao"] = $request["classificacao"] ?? ["code" => 0];
         $request["data"] = $request["data"] ?? "";
         $request["hrIni"] = $request["hrIni"] ?? "";
         $request["hrFim"] = $request["hrFim"] ?? "";
@@ -67,7 +67,7 @@ class EventoController extends BaseController
         $request["facebook"] = $request["facebook"] ?? "";
         $request["instagram"] = $request["instagram"] ?? "";
         $request["site"] = $request["site"] ?? "";
-        $request["tipo"] = $request["tipo"] ?? "";
+        $request["tipo"] = $request["tipo"] ?? ["value" => 0];
         $request["espaco"] = $request["espaco"] ?? "";
         $request["imagemPerfil"] = $request["imagemPerfil"] ?? "";
         $request["id"] = empty($request["id"]) ? 0 : $request["id"];
