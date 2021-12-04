@@ -13,12 +13,14 @@ class EventoController extends BaseController
     use AuthorizesRequests;
 
     /**
+     * @param Request $request
      * @return array
      */
-    public function listarEventos(): array
+    public function listarEventos(Request $request): array
     {
-        $eventos = DB::select("SELECT * FROM evento");
-        if (is_array($eventos)) {
+        $where = $this->condicaoFiltroEvento($request);
+        $eventos = DB::select("SELECT * FROM evento $where");
+        if (count($eventos) > 0) {
             foreach ($eventos as &$evento) {
                 $evento->fotosEvento = $this->buscarFotos($evento->id);
             }
@@ -28,16 +30,38 @@ class EventoController extends BaseController
 
     /**
      * @param int $codEvento
+     * @param Request $request
      * @return array|mixed
      */
-    public function listarEvento(int $codEvento)
+    public function listarEvento(int $codEvento, Request $request)
     {
-        $evento = DB::select("SELECT * FROM evento WHERE id = $codEvento");
-        if (is_array($evento)) {
+        $where = $this->condicaoFiltroEvento($request, true);
+        $evento = DB::select("SELECT * FROM evento WHERE id = $codEvento $where");
+        if (count($evento) > 0) {
             $evento[0]->fotosEvento = $this->buscarFotos($codEvento);
             return $evento[0];
         }
         return [];
+    }
+
+    /**
+     * @param Request $request
+     * @param bool $maisCondicoes
+     * @return string
+     */
+    private function condicaoFiltroEvento(Request $request, bool $maisCondicoes = false): string {
+        $where = "";
+        $maisCondicoes = $maisCondicoes ? "AND" : "WHERE";
+        if ($request->data1) {
+            $request->data1 = date("Y-m-d", strtotime($request->data1));
+            $where = "$maisCondicoes data = '{$request->data1}'";
+        }
+        if ($request->data1 && $request->data2) {
+            $request->data1 = date("Y-m-d", strtotime($request->data1));
+            $request->data2 = date("Y-m-d", strtotime($request->data2));
+            $where = "$maisCondicoes data BETWEEN '{$request->data1}' AND '{$request->data2}'";
+        }
+        return $where;
     }
 
     /**

@@ -1,10 +1,11 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\EspacoController;
-use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, "login"]);
 
@@ -14,6 +15,9 @@ Route::post('/usuario', [UsuarioController::class, "salvarUsuario"]);
 Route::post('/usuario_rapido', [UsuarioController::class, "salvarUsuarioRapido"]);
 
 Route::get('/evento/{codEvento}', [EventoController::class, "listarEvento"]);
+Route::get('/evento/{codEvento}', function (Request $request, $codEvento) {
+    (new EventoController)->listarEvento($codEvento, $request);
+});
 Route::get('/eventos', [EventoController::class, "listarEventos"]);
 Route::post('/evento', [EventoController::class, "salvarEvento"]);
 

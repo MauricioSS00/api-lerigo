@@ -38,7 +38,7 @@ class UsuarioController extends BaseController
     public function salvarUsuario(Request $request): bool
     {
         $request = json_decode($request->getContent(), true);
-        $endereco = $request["endereco"][0];
+        $endereco = $request["endereco"];
         $tipoPessoa = $request["tipoP"] == "cpf" ? "F" : "J";
         $dtNasc = date("d/m/Y", strtotime($request["dtNasc"]));
         $senha = bcrypt($request["user_password"]);
