@@ -61,4 +61,25 @@ SQL;
             throw new Exception("Ocorreu um erro");
         }
     }
+
+    public function espacoDropdown(Request $request): array
+    {
+        $where = "";
+        if ($request->nome) {
+            $where = "WHERE nome like '%{$request->nome}%'";
+        }
+        $SQL = <<<SQL
+SELECT
+	id value,
+	nome label
+FROM
+    espaco
+$where
+SQL;
+        try {
+            return DB::select($SQL);
+        } catch (Exception $e) {
+            throw new Exception("Ocorreu um erro");
+        }
+    }
 }

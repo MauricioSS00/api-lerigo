@@ -27,6 +27,7 @@ Route::post('/login', [AuthController::class, "login"]);
     Route::get('/espacos', [EspacoController::class, "listarEspacos"]);
     Route::post('/espaco', [EspacoController::class, "salvarEspacos"]);
 
-    Route::get('/artista/dropdown', [BuscasController::class, "artistaDropdown"]);
-    Route::get('/produtor/dropdown', [BuscasController::class, "produtorDropdown"]);
+    Route::get('/dropdown/artista', [BuscasController::class, "artistaDropdown"]);
+    Route::get('/dropdown/produtor', [BuscasController::class, "produtorDropdown"]);
+    Route::get('/dropdown/espaco', [BuscasController::class, "espacoDropdown"]);
 //});

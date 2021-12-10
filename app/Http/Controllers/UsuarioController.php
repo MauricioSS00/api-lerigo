@@ -17,7 +17,17 @@ class UsuarioController extends BaseController
      */
     public function listarUsuarios(): array
     {
-        $usuarios = DB::select("SELECT * FROM users");
+        $SQL = <<<SQL
+SELECT
+	u.*
+FROM
+	usuario_outros_dados uod
+JOIN
+	users u ON u.id = uod.id_usuario
+WHERE
+	uod.tipo IN('produtor', 'artista')
+SQL;
+        $usuarios = DB::select($SQL);
         foreach ($usuarios as &$usuario) {
             $usuario = (array)$usuario;
             $outrosDados = $this->buscarOutrosDados($usuario["id"]);

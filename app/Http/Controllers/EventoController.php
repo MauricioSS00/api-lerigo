@@ -115,10 +115,10 @@ VALUES
 SQL;
         try {
             DB::select($SQL);
-            if (is_array($request["artistas"])) {
+            if (isset($request["artistas"]) && is_array($request["artistas"])) {
                 $this->salvarArtistas($request["id"], $request["artistas"]);
             }
-            if (is_array($request["fotosEvento"]) && count($request["fotosEvento"]) > 0) {
+            if (isset($request["artistas"]) && is_array($request["fotosEvento"]) && count($request["fotosEvento"]) > 0) {
                 $this->salvarFotos($request["id"], $request["fotosEvento"]);
             }
             return true;
