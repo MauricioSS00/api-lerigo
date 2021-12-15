@@ -16,6 +16,7 @@ class VerifyCsrfToken extends Middleware
         "usuario_rapido",
         "login",
         "evento",
-        "espaco"
+        "espaco",
+        "post"
     ];
 }

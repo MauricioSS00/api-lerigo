@@ -7,6 +7,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\EspacoController;
 use App\Http\Controllers\BuscasController;
+use App\Http\Controllers\BlogController;
 
 Route::post('/login', [AuthController::class, "login"]);
 
@@ -30,4 +31,8 @@ Route::post('/login', [AuthController::class, "login"]);
     Route::get('/dropdown/artista', [BuscasController::class, "artistaDropdown"]);
     Route::get('/dropdown/produtor', [BuscasController::class, "produtorDropdown"]);
     Route::get('/dropdown/espaco', [BuscasController::class, "espacoDropdown"]);
+
+    Route::get('/post/{codEspaco}', [BlogController::class, "buscarPost"]);
+    Route::get('/posts', [BlogController::class, "buscarPosts"]);
+    Route::post('/post', [BlogController::class, "salvarPost"]);
 //});
