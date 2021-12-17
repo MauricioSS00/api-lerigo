@@ -22,16 +22,21 @@ class BlogController extends BaseController
         $request = json_decode($request->getContent(), true);
         $request["id"] = empty($request["id"]) ? 0 : $request["id"];
         $request["html"] = $request["html"] ?? "";
-        $request["img"] = $request["img"] ?? "";
+        $request["imgHtml"] = $request["imgHtml"] ?? "";
+        $request["img64"] = $request["img64"] ?? "";
+        $request["hyperlink"] = $request["hyperlink"] ?? "";
+        $request["textoAlt"] = $request["textoAlt"] ?? "";
+        $request["rodape"] = $request["rodape"] ?? "";
         $SQL = <<<SQL
 REPLACE INTO
     post_blog
 (
-    id, html, imagem
+    id, html, imagem_html, imagem_base64, hyperlink, texto_alternativo, rodape
 )
 VALUES
 (
-    {$request["id"]}, '{$request["html"]}', '{$request["img"]}'
+    {$request["id"]}, '{$request["html"]}', '{$request["imgHtml"]}', '{$request["img64"]}', '{$request["hyperlink"]}',
+    '{$request["textoAlt"]}', '{$request["rodape"]}'
 )
 SQL;
         try {
@@ -42,19 +47,24 @@ SQL;
     }
 
     /**
+     * @param Request $request
      * @return array
      * @throws Exception
      */
-    public function buscarPosts(): array
+    public function buscarPosts(Request $request): array
     {
+        $where = "";
+        if ($request->status == 1 || $request->status == 0) {
+            $where = "WHERE status = {$request->status}";
+        }
         $SQL = <<<SQL
-SELECT * FROM post_blog ORDER BY data_publicacao DESC
+SELECT * FROM post_blog $where ORDER BY data_publicacao DESC
 SQL;
         try {
             $posts = DB::select($SQL);
             foreach ($posts as &$post) {
                 $post = (array)$post;
-                $post["html"] = $post["imagem"] . $post["html"];
+                $post["htmlIMG"] = $post["imagem_html"] . $post["html"];
             }
             return $posts;
         } catch (Exception $e) {
@@ -69,14 +79,15 @@ SQL;
      */
     public function buscarPost(int $codPost): array
     {
+        $where = "";
         $SQL = <<<SQL
-SELECT * FROM post_blog WHERE id = $codPost
+SELECT * FROM post_blog WHERE id = $codPost $where
 SQL;
         try {
             $post = DB::select($SQL);
             $post = $post[0];
             $post = (array)$post;
-            $post["html"] = $post["imagem"] . $post["html"];
+            $post["htmlIMG"] = $post["imagem_html"] . $post["html"];
             return $post;
         } catch (Exception $e) {
             throw new Exception("Ocorreu um erro");
