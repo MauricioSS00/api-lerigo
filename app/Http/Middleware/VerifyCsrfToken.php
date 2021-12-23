@@ -17,6 +17,7 @@ class VerifyCsrfToken extends Middleware
         "login",
         "evento",
         "espaco",
-        "post"
+        "post",
+        "colaborador"
     ];
 }

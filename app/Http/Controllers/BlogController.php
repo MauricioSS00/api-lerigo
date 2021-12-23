@@ -93,4 +93,22 @@ SQL;
             throw new Exception("Ocorreu um erro");
         }
     }
+
+    /**
+     * @param Request $request
+     * @return bool
+     * @throws Exception
+     */
+    public function atualizarStatus(Request $request): bool
+    {
+        $SQL = <<<SQL
+UPDATE post_blog SET status = IF(status = 1, 0, 1) WHERE id = {$request->codigo}
+SQL;
+        try {
+            DB::select($SQL);
+            return true;
+        } catch (Exception $e) {
+            throw new Exception("Ocorreu um erro");
+        }
+    }
 }
