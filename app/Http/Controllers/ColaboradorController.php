@@ -65,7 +65,7 @@ SQL;
     public function listarColaboradores(Request $request): array
     {
         $where = "";
-        if ($request->status == 1 || $request->status == 0) {
+        if (isset($request->status) && !empty($request->status)) {
             $where = "WHERE status = {$request->status}";
         }
         return DB::select("SELECT * FROM colaborador $where");

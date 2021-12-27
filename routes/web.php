@@ -18,6 +18,9 @@ Route::get('/usuarios', [UsuarioController::class, "listarUsuarios"]);
 Route::post('/usuario', [UsuarioController::class, "salvarUsuario"]);
 Route::post('/usuario_rapido', [UsuarioController::class, "salvarUsuarioRapido"]);
 
+Route::get('/usuarios/produtor', [UsuarioController::class, "listarProdutores"]);
+Route::get('/usuarios/artista', [UsuarioController::class, "listarArtistas"]);
+
 Route::get('/evento/{codEvento}', [EventoController::class, "listarEvento"]);
 Route::get('/evento/{codEvento}', function (Request $request, $codEvento) {
     (new EventoController)->listarEvento($codEvento, $request);

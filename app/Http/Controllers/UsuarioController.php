@@ -13,21 +13,16 @@ class UsuarioController extends BaseController
     use AuthorizesRequests;
 
     /**
+     * @param Request $request
      * @return array
      */
-    public function listarUsuarios(): array
+    public function listarUsuarios(Request $request): array
     {
-        $SQL = <<<SQL
-SELECT
-	u.*
-FROM
-	usuario_outros_dados uod
-JOIN
-	users u ON u.id = uod.id_usuario
-WHERE
-	uod.tipo IN('produtor', 'artista')
-SQL;
-        $usuarios = DB::select($SQL);
+        $where = "";
+        if (isset($request->nome) && !empty($request->nome)) {
+            $where = "WHERE nome LIKE '%{$request->nome}%' || nome_social LIKE '%{$request->nome}%'";
+        }
+        $usuarios = DB::select("SELECT * FROM users $where");
         foreach ($usuarios as &$usuario) {
             $usuario = (array)$usuario;
             $outrosDados = $this->buscarOutrosDados($usuario["id"]);
@@ -42,7 +37,7 @@ SQL;
      * @param int $codUsuario
      * @return array
      */
-    public function listarUsuario(int $codUsuario)
+    public function listarUsuario(int $codUsuario): array
     {
         $usuario = DB::select("SELECT * FROM users WHERE id = $codUsuario");
         if (count($usuario) > 0) {
@@ -56,7 +51,11 @@ SQL;
         return [];
     }
 
-    private function buscarOutrosDados(int $codUsuario)
+    /**
+     * @param int $codUsuario
+     * @return array
+     */
+    private function buscarOutrosDados(int $codUsuario): array
     {
         $outrosDados = DB::select("SELECT * FROM usuario_outros_dados WHERE id_usuario = $codUsuario");
         foreach ($outrosDados as &$outroDado) {
@@ -315,5 +314,67 @@ FROM
 SQL;
         $result = DB::select($SQL);
         return is_array($result) ? $result[0]->id : null;
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     */
+    public function listarProdutores(Request $request): array
+    {
+        $where = "";
+        if (isset($request->nome) && !empty($request->nome)) {
+            $where = "AND (u.nome LIKE '%{$request->nome}%' || u.nome_social LIKE '%{$request->nome}%')";
+        }
+        $SQL = <<<SQL
+SELECT
+	u.*
+FROM
+	usuario_outros_dados uod
+JOIN
+	users u ON u.id = uod.id_usuario
+WHERE
+	uod.tipo = 'produtor' $where
+SQL;
+        $usuarios = DB::select($SQL);
+        foreach ($usuarios as &$usuario) {
+            $usuario = (array)$usuario;
+            $outrosDados = $this->buscarOutrosDados($usuario["id"]);
+            foreach ($outrosDados as $outroDado) {
+                $usuario[$outroDado["tipo"]] = $outroDado;
+            }
+        }
+        return $usuarios;
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     */
+    public function listarArtistas(Request $request): array
+    {
+        $where = "";
+        if (isset($request->nome) && !empty($request->nome)) {
+            $where = "AND (u.nome LIKE '%{$request->nome}%' || u.nome_social LIKE '%{$request->nome}%')";
+        }
+        $SQL = <<<SQL
+SELECT
+	u.*
+FROM
+	usuario_outros_dados uod
+JOIN
+	users u ON u.id = uod.id_usuario
+WHERE
+	uod.tipo = 'artista' $where
+SQL;
+        $usuarios = DB::select($SQL);
+        foreach ($usuarios as &$usuario) {
+            $usuario = (array)$usuario;
+            $outrosDados = $this->buscarOutrosDados($usuario["id"]);
+            foreach ($outrosDados as $outroDado) {
+                $usuario[$outroDado["tipo"]] = $outroDado;
+            }
+        }
+        return $usuarios;
     }
 }
