@@ -56,17 +56,16 @@ Route::middleware('apiJwt')->group(function () {
 
     Route::post('/usuario', [UsuarioController::class, "salvarUsuario"]);
 
-});
-
-Route::prefix('/permissao')->group(function () {
-    Route::get('/produtor/artista', [PermissaoController::class, "buscarPermissaoProdutorArtista"]);
-    Route::get('/evento/espaco', [PermissaoController::class, "buscarPermissaoEventoEspaco"]);
-    Route::get('/evento/artista', [PermissaoController::class, "listarPermissaoEventoArtista"]);
-    Route::put('/status', [PermissaoController::class, "responderPermissao"]);
-    Route::prefix('solicitar')->group(function () {
-        Route::post('/produtor/artista', function (Request $request) {
-            $request = json_decode($request->getContent(), true);
-            (new PermissaoController)->solicitarPermissaoProdutorArtista($request["produtor"], $request["artista"], $request["solicitante"]);
+    Route::prefix('/permissao')->group(function () {
+        Route::get('/produtor/artista', [PermissaoController::class, "buscarPermissaoProdutorArtista"]);
+        Route::get('/evento/espaco', [PermissaoController::class, "buscarPermissaoEventoEspaco"]);
+        Route::get('/evento/artista', [PermissaoController::class, "listarPermissaoEventoArtista"]);
+        Route::put('/status', [PermissaoController::class, "responderPermissao"]);
+        Route::prefix('solicitar')->group(function () {
+            Route::post('/produtor/artista', function (Request $request) {
+                $request = json_decode($request->getContent(), true);
+                (new PermissaoController)->solicitarPermissaoProdutorArtista($request["produtor"], $request["artista"], $request["solicitante"]);
+            });
         });
     });
 });
