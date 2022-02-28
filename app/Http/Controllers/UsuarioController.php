@@ -323,14 +323,22 @@ SQL;
     public function listarProdutores(Request $request): array
     {
         $where = "";
+        $join = "";
         if (isset($request->nome) && !empty($request->nome)) {
             $where = "AND (u.nome LIKE '%{$request->nome}%' || u.nome_social LIKE '%{$request->nome}%')";
+        }
+        if (isset($request->email) && !empty($request->email)) {
+            $where .= " AND u.email = '{$request->email}'";
+        }
+        if (isset($request->usuario) && !empty($request->usuario)) {
+            $join = "JOIN permissao_produtor_artista ppa ON ppa.id_produtor = uod.id_usuario AND ppa.id_artista = {$request->usuario} AND aprovado = 'S'";
         }
         $SQL = <<<SQL
 SELECT
 	u.*
 FROM
 	usuario_outros_dados uod
+    $join
 JOIN
 	users u ON u.id = uod.id_usuario
 WHERE
@@ -354,14 +362,22 @@ SQL;
     public function listarArtistas(Request $request): array
     {
         $where = "";
+        $join = "";
         if (isset($request->nome) && !empty($request->nome)) {
             $where = "AND (u.nome LIKE '%{$request->nome}%' || u.nome_social LIKE '%{$request->nome}%')";
+        }
+        if (isset($request->email) && !empty($request->email)) {
+            $where .= " AND u.email = '{$request->email}'";
+        }
+        if (isset($request->usuario) && !empty($request->usuario)) {
+            $join = "JOIN permissao_produtor_artista ppa ON ppa.id_artista = uod.id_usuario AND ppa.id_produtor = {$request->usuario} AND aprovado = 'S'";
         }
         $SQL = <<<SQL
 SELECT
 	u.*
 FROM
 	usuario_outros_dados uod
+    $join
 JOIN
 	users u ON u.id = uod.id_usuario
 WHERE

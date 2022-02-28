@@ -14,11 +14,16 @@ class EspacoController extends BaseController
     use AuthorizesRequests;
 
     /**
+     * @param Request $request
      * @return array
      */
-    public function listarEspacos(): array
+    public function listarEspacos(Request $request): array
     {
-        $espacos = DB::select("SELECT * FROM espaco");
+        $join = "";
+        if (isset($request->usuario) && !empty($request->usuario)) {
+            $join = "JOIN espaco_administrador ON id_espaco = esp.id AND id_usuario = $request->usuario";
+        }
+        $espacos = DB::select("SELECT * FROM espaco esp $join");
         if (is_array($espacos)) {
             foreach ($espacos as &$espaco) {
                 $espaco->fotosEspaco = $this->buscarFotos($espaco->id);
@@ -63,10 +68,10 @@ class EspacoController extends BaseController
 
     /**
      * @param Request $request
-     * @return bool
+     * @return int
      * @throws Exception
      */
-    public function salvarEspacos(Request $request): bool
+    public function salvarEspacos(Request $request): int
     {
         $request = json_decode($request->getContent(), true);
         $request["nome"] = $request["nome"] ?? "";
@@ -122,9 +127,9 @@ SQL;
             if (is_array($request["fotosEspaco"]) && count($request["fotosEspaco"]) > 0) {
                 $this->salvarFotos($request["id"], $request["fotosEspaco"]);
             }
-            return true;
+            return !$request["id"] ? $this->buscarIdEspaco() : $request["id"];
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            throw new Exception("Ocorreu um erro!");
         }
     }
 
@@ -209,5 +214,35 @@ FROM
 SQL;
         $result = DB::select($SQL);
         return is_array($result) ? $result[0]->id : null;
+    }
+
+    /**
+     * @param Request $request
+     * @return bool
+     * @throws Exception
+     */
+    public function salvarAdministradoresEspaco(Request $request): bool
+    {
+        $request = json_decode($request->getContent(), true);
+        foreach ($request as $administrador) {
+            $administrador["id"] = empty($administrador["id"]) ? 0 : $administrador["id"];
+            $SQL = <<<SQL
+REPLACE INTO
+    espaco_administrador
+(
+    id, id_espaco, id_usuario, nivel
+)
+VALUES
+(
+    {$administrador["id"]}, {$administrador["idEspaco"]}, {$administrador["idUsuario"]}, '{$administrador["nivel"]}'
+)
+SQL;
+            try {
+                DB::select($SQL);
+            } catch (Exception $e) {
+                throw new Exception("Ocorreu um erro!");
+            }
+        }
+        return true;
     }
 }

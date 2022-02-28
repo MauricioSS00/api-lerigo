@@ -97,26 +97,32 @@ class EventoController extends BaseController
         $request["id"] = empty($request["id"]) ? 0 : $request["id"];
         $request["data"] = date("Y-m-d", strtotime($request["data"]));
         $request["espaco"] = !is_array($request["espaco"]) ? 0 : $request["espaco"]["value"];
-
+        $podeInserir = $this->permissaoEspaco($request["espaco"], $request["id"], $request["usuarioCriador"]);
+        $campoEspaco = "";
+        $valorEspaco = "";
+        if ($podeInserir) {
+            $campoEspaco = ", espaco";
+            $valorEspaco = ", {$request["espaco"]}";
+        }
         $SQL = <<<SQL
 REPLACE INTO
     evento
 (
     id, nome, classificacao, data, hora_ini, hora_fim, descricao, resumo, facebook,
-    instagram, site, tipo, espaco, imagem_perfil
+    instagram, site, tipo, imagem_perfil $campoEspaco
 )
 VALUES
 (
     {$request["id"]}, '{$request["nome"]}', '{$request["classificacao"]["code"]}', '{$request["data"]}',
     '{$request["hrIni"]}', '{$request["hrFim"]}', '{$request["descricao"]}', '{$request["resumo"]}',
     '{$request["facebook"]}', '{$request["instagram"]}', '{$request["site"]}', '{$request["tipo"]["value"]}',
-    {$request["espaco"]}, '{$request["imagemPerfil"]}'
+    '{$request["imagemPerfil"]}' $valorEspaco
 )
 SQL;
         try {
             DB::select($SQL);
             if (isset($request["artistas"]) && is_array($request["artistas"])) {
-                $this->salvarArtistas($request["id"], $request["artistas"]);
+                $this->salvarArtistas($request["id"], $request["artistas"], $request["usuarioCriador"]);
             }
             if (isset($request["artistas"]) && is_array($request["fotosEvento"]) && count($request["fotosEvento"]) > 0) {
                 $this->salvarFotos($request["id"], $request["fotosEvento"]);
@@ -128,14 +134,37 @@ SQL;
     }
 
     /**
+     * @param $idEspaco
+     * @param $idEvento
+     * @param $criadorEvento
+     * @return bool
+     * @throws Exception
+     */
+    private function permissaoEspaco($idEspaco, $idEvento, $criadorEvento): bool
+    {
+        $idEvento = !$idEvento ? $this->buscarIdEvento() : $idEvento;
+        if (!$this->administradorEspaco($idEspaco, $criadorEvento)) {
+            (new PermissaoController())->solicitarPermissaoEventoEspaco($idEvento, $idEspaco);
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * @param int $idEvento
      * @param array $artistas
+     * @param $criadorEvento
+     * @throws Exception
      */
-    private function salvarArtistas(int $idEvento, array $artistas)
+    private function salvarArtistas(int $idEvento, array $artistas, $criadorEvento)
     {
         $idEvento = !$idEvento ? $this->buscarIdEvento() : $idEvento;
         DB::select("DELETE FROM evento_artista WHERE id_evento = $idEvento");
         foreach ($artistas as $artista) {
+            if (!$this->produtorArtista($artista["value"], $criadorEvento)) {
+                (new PermissaoController())->solicitarPermissaoEventoArtista($idEvento, $artista["value"]);
+                continue;
+            }
             $SQL = <<<SQL
 INSERT INTO
     evento_artista
@@ -173,6 +202,45 @@ VALUES
 SQL;
             DB::select($SQL);
         }
+    }
+
+    /**
+     * @param $idEspaco
+     * @param $criadorEvento
+     * @return bool
+     */
+    private function administradorEspaco($idEspaco, $criadorEvento): bool {
+        $SQL = <<<SQL
+SELECT
+    *
+FROM
+    espaco_administrador
+WHERE
+    id_espaco = $idEspaco
+SQL;
+        $administradores = DB::select($SQL);
+        $idAdministradores = explode(",", implode(",", array_column($administradores, "id_usuario")));
+        return in_array($criadorEvento, $idAdministradores);
+    }
+
+    /**
+     * @param $idArtista
+     * @param $idProdutor
+     * @return bool
+     */
+    private function produtorArtista($idArtista, $idProdutor): bool {
+        $SQL = <<<SQL
+SELECT
+    *
+FROM
+    permissao_produtor_artista
+WHERE
+    id_artista = $idArtista
+    AND aprovado = 'S'
+SQL;
+        $produtores = DB::select($SQL);
+        $idProdutores = explode(",", implode(",", array_column($produtores, "id")));
+        return in_array($idProdutor, $idProdutores);
     }
 
     /**
