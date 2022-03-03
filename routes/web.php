@@ -21,7 +21,7 @@ Route::get('/usuarios/produtor', [UsuarioController::class, "listarProdutores"])
 Route::get('/usuarios/artista', [UsuarioController::class, "listarArtistas"]);
 
 Route::get('/evento/{codEvento}', function (Request $request, $codEvento) {
-    (new EventoController)->listarEvento($codEvento, $request);
+    return (new EventoController)->listarEvento($codEvento, $request);
 });
 Route::get('/eventos', [EventoController::class, "listarEventos"]);
 
