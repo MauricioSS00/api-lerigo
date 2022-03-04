@@ -22,6 +22,8 @@ class EventoController extends BaseController
         $eventos = DB::select("SELECT * FROM evento $where");
         if (count($eventos) > 0) {
             foreach ($eventos as &$evento) {
+                $evento->artistas = $this->buscarArtistas($evento->id);
+                $evento->produtor = $this->buscarProdutor($evento->produtor);
                 $evento->fotosEvento = $this->buscarFotos($evento->id);
             }
         }
@@ -38,8 +40,11 @@ class EventoController extends BaseController
         $where = $this->condicaoFiltroEvento($request, true);
         $evento = DB::select("SELECT * FROM evento WHERE id = $codEvento $where");
         if (count($evento) > 0) {
-            $evento[0]->fotosEvento = $this->buscarFotos($codEvento);
-            return $evento[0];
+            $evento = $evento[0];
+            $evento->artistas = $this->buscarArtistas($codEvento);
+            $evento->produtor = $this->buscarProdutor($evento->produtor);
+            $evento->fotosEvento = $this->buscarFotos($codEvento);
+            return $evento;
         }
         return [];
     }
@@ -49,7 +54,8 @@ class EventoController extends BaseController
      * @param bool $maisCondicoes
      * @return string
      */
-    private function condicaoFiltroEvento(Request $request, bool $maisCondicoes = false): string {
+    private function condicaoFiltroEvento(Request $request, bool $maisCondicoes = false): string
+    {
         $where = "";
         $maisCondicoes = $maisCondicoes ? "AND" : "WHERE";
         if ($request->data1) {
@@ -71,6 +77,49 @@ class EventoController extends BaseController
     private function buscarFotos(int $codEvento): array
     {
         return DB::select("SELECT foto FROM evento_foto WHERE id_evento = $codEvento");
+    }
+
+    /**
+     * @param int $codEvento
+     * @return array
+     */
+    private function buscarArtistas(int $codEvento): array
+    {
+        $SQL = <<<SQL
+SELECT
+    u.*,
+    uod.*
+FROM
+    evento_artista ea,
+    users u,
+    usuario_outros_dados uod
+WHERE
+    ea.id_artista = u.id
+    AND ea.id_artista = uod.id_usuario
+    AND ea.id_evento = $codEvento
+    AND uod.tipo = 'artista'
+SQL;
+        return DB::select($SQL);
+    }
+
+    /**
+     * @param int $codProdutor
+     * @return array
+     */
+    private function buscarProdutor(int $codProdutor): array
+    {
+        $SQL = <<<SQL
+SELECT
+    u.*,
+    uod.*
+FROM
+    users u,
+    usuario_outros_dados uod
+WHERE
+    u.id = uod.id_usuario
+    AND u.id = $codProdutor
+SQL;
+        return (array)DB::select($SQL)[0];
     }
 
     /**
@@ -109,14 +158,14 @@ REPLACE INTO
     evento
 (
     id, nome, classificacao, data, hora_ini, hora_fim, descricao, resumo, facebook,
-    instagram, site, tipo, imagem_perfil $campoEspaco
+    instagram, site, tipo, imagem_perfil, produtor, $campoEspaco
 )
 VALUES
 (
     {$request["id"]}, '{$request["nome"]}', '{$request["classificacao"]["code"]}', '{$request["data"]}',
     '{$request["hrIni"]}', '{$request["hrFim"]}', '{$request["descricao"]}', '{$request["resumo"]}',
     '{$request["facebook"]}', '{$request["instagram"]}', '{$request["site"]}', '{$request["tipo"]["value"]}',
-    '{$request["imagemPerfil"]}' $valorEspaco
+    '{$request["imagemPerfil"]}', {$request["usuarioCriador"]} $valorEspaco
 )
 SQL;
         try {
@@ -209,7 +258,8 @@ SQL;
      * @param $criadorEvento
      * @return bool
      */
-    private function administradorEspaco($idEspaco, $criadorEvento): bool {
+    private function administradorEspaco($idEspaco, $criadorEvento): bool
+    {
         $SQL = <<<SQL
 SELECT
     *
@@ -228,7 +278,8 @@ SQL;
      * @param $idProdutor
      * @return bool
      */
-    private function produtorArtista($idArtista, $idProdutor): bool {
+    private function produtorArtista($idArtista, $idProdutor): bool
+    {
         $SQL = <<<SQL
 SELECT
     *
