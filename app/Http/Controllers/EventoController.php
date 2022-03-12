@@ -158,7 +158,7 @@ REPLACE INTO
     evento
 (
     id, nome, classificacao, data, hora_ini, hora_fim, descricao, resumo, facebook,
-    instagram, site, tipo, imagem_perfil, produtor, $campoEspaco
+    instagram, site, tipo, imagem_perfil, produtor $campoEspaco
 )
 VALUES
 (
