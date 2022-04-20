@@ -308,4 +308,32 @@ SQL;
         $result = DB::select($SQL);
         return is_array($result) ? $result[0]->id : null;
     }
+
+    public function eventosUsuarios(int $codUsuario)
+    {
+        $SQL = <<<SQL
+SELECT
+	e.*
+FROM
+	evento e
+LEFT JOIN
+	evento_artista ea ON ea.id_evento = e.id
+LEFT JOIN
+	espaco_administrador ead ON ead.id_espaco = e.espaco
+WHERE
+	(
+			e.produtor = $codUsuario
+		OR
+			ea.id_artista = $codUsuario
+		OR
+			ead.id_usuario = $codUsuario
+	)
+GROUP BY e.id
+SQL;
+        try {
+            return DB::select($SQL);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 }

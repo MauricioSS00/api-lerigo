@@ -101,10 +101,12 @@ SQL;
         if ($request->produtor) {
             $filtro = "id_produtor = $request->produtor";
             $campoJoin = "id_artista";
+            $msg = "Você recebeu uma solicitação do artista {{nome}}";
         }
         if ($request->artista) {
             $filtro = "id_artista = $request->artista";
             $campoJoin = "id_produtor";
+            $msg = "Você recebeu uma solicitação do produtor {{nome}}";
         }
         $SQL = <<<SQL
 SELECT
@@ -120,7 +122,12 @@ WHERE
     AND aprovado = 'N'
 SQL;
         try {
-            return DB::select($SQL);
+            $dados = DB::select($SQL);
+            foreach ($dados as $dado) {
+                $msg = str_replace("{{nome}}", $dado->nome, $msg);
+                $dado->msg = $msg;
+            }
+            return $dados;
         } catch (Exception $e) {
             throw new Exception("Ocorreu um erro!");
         }
@@ -140,11 +147,13 @@ SQL;
             $filtro = "id_solicitante = $request->evento";
             $tabelaJoin = "espaco";
             $campoJoin = "id_solicitado";
+            $msg = "Você recebeu uma solicitação do espaço {{nome}}";
         }
         if ($request->espaco) {
             $filtro = "id_solicitado = $request->espaco";
             $tabelaJoin = "evento";
             $campoJoin = "id_solicitante";
+            $msg = "Você recebeu uma solicitação do evento {{nome}}";
         }
         $SQL = <<<SQL
 SELECT
@@ -160,7 +169,12 @@ WHERE
     AND aprovado = 'N'
 SQL;
         try {
-            return DB::select($SQL);
+            $dados = DB::select($SQL);
+            foreach ($dados as $dado) {
+                $msg = str_replace("{{nome}}", $dado->nome, $msg);
+                $dado->msg = $msg;
+            }
+            return $dados;
         } catch (Exception $e) {
             throw new Exception("Ocorreu um erro!");
         }
@@ -180,11 +194,13 @@ SQL;
             $filtro = "id_solicitante = $request->evento";
             $tabelaJoin = "users";
             $campoJoin = "id_solicitado";
+            $msg = "Você recebeu uma solicitação do artista {{nome}}";
         }
         if ($request->artista) {
             $filtro = "id_solicitado = $request->artista";
             $tabelaJoin = "evento";
             $campoJoin = "id_solicitante";
+            $msg = "Você recebeu uma solicitação do evento {{nome}}";
         }
         $SQL = <<<SQL
 SELECT
@@ -200,7 +216,12 @@ WHERE
     AND aprovado = 'N'
 SQL;
         try {
-            return DB::select($SQL);
+            $dados = DB::select($SQL);
+            foreach ($dados as $dado) {
+                $msg = str_replace("{{nome}}", $dado->nome, $msg);
+                $dado->msg = $msg;
+            }
+            return $dados;
         } catch (Exception $e) {
             throw new Exception("Ocorreu um erro!");
         }

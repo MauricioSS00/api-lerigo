@@ -10,6 +10,7 @@ use App\Http\Controllers\BuscasController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\PermissaoController;
+use App\Http\Controllers\GeraisController;
 
 Route::post('/login', [AuthController::class, "login"]);
 Route::get('/logout', [AuthController::class, "logout"]);
@@ -67,5 +68,17 @@ Route::middleware('apiJwt')->group(function () {
                 (new PermissaoController)->solicitarPermissaoProdutorArtista($request["produtor"], $request["artista"], $request["solicitante"]);
             });
         });
+    });
+
+    Route::get('/eventos/usuario/{codUsuario}', [EventoController::class, "eventosUsuarios"]);
+
+    Route::prefix('/geral')->group(function () {
+        Route::post('/espaco/tipo', [GeraisController::class, "salvarEditarEspacoTipo"]);
+        Route::get('/espaco/tipos', [GeraisController::class, "buscarEspacoTipos"]);
+        Route::get('/espaco/tipo/{codEspacoTipo}', [GeraisController::class, "buscarEspacoTipo"]);
+
+        Route::post('/evento/tipo', [GeraisController::class, "salvarEditarEventoTipo"]);
+        Route::get('/evento/tipos', [GeraisController::class, "buscarEventoTipos"]);
+        Route::get('/evento/tipo/{codEspacoTipo}', [GeraisController::class, "buscarEventoTipo"]);
     });
 });
